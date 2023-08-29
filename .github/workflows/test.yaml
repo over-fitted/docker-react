@@ -1,0 +1,18 @@
+name: Build and Test
+on:
+  push:
+    branches: 
+    - '**'
+    - '!master'
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag overfitted21/docker-react:$(date +%s)
+    - name: Test the image
+      run: docker run -e CI=true overfitted21/docker-react:$(date +%s) npm run test -- --coverage
