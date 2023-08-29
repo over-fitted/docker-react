@@ -5,16 +5,24 @@ on:
       - main # check your repo, your default branch might be master!
  
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile.dev --tag overfitted21/react-test
+    - name: Test the image
+      run: docker run -e CI=true overfitted21/react-test npm run test -- --coverage
+
   build:
+    needs: ["test"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      # - run: docker build -t overfitted21/react-test .
-      # - run: docker push overfitted21/react-test
-      - run: docker build -t overfitted21/docker-react -f Dockerfile.dev .
-      - run: docker run -e CI=true overfitted21/docker-react npm run test -- --coverage
+      - run: docker build -t overfitted21/docker-react .
+      - run: docker push overfitted21/docker-react
 
       # - run: docker build -t overfitted21/react-test -f ./client/Dockerfile.dev ./client
       # - run: docker run -e CI=true overfitted21/react-test npm test
